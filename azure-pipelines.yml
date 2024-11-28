@@ -1,0 +1,36 @@
+trigger:
+- main
+
+pool: bhoologam
+
+steps:
+- script: echo "Stage 1 - Setting up Java version."
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package'
+
+- script: echo "Stage 2 - Maven build and test completed successfully."
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
+    ArtifactName: 'my-java-artifacts'
+    publishLocation: 'container'
+
+- script: echo "Stage 3 - Artifacts published successfully."
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    failTaskOnFailedTests: true
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+
+- script: echo "Regression test is successfully completed.”
+
